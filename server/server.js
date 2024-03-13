@@ -3,9 +3,10 @@ const axios = require('axios')
 const OAuth2Data = require('./credentials1.json')
 const app = express()
 const {google} = require('googleapis')
+var videoID = "";
 const apiKey = "AIzaSyD7cYS4vjyKVAgYP74UtFBGK9ecqPD18cE";
 const baseApiUrl = "https://www.googleapis.com/youtube/v3";
-const videoId = "nxSrEy4ocNw";
+
 const session = require('express-session')
 
 app.use(session({
@@ -76,7 +77,7 @@ app.use(express.json());
                     console.error('cant save session:', err);
                 }
             });
-            console.log("After saving", req.session)
+            // console.log("After saving", req.session)
 
             const { name, email } = req.body;
             const info = { name, email };
@@ -99,6 +100,7 @@ app.use(express.json());
 
 
 async function getCaptionsList(authClient){
+    console.log("Session videoID: ", videoId)
     try{
     const response = await youtube.captions.list({
         part: 'snippet',
@@ -181,9 +183,31 @@ function countWords(transcript, wordsToCount){
 const wordsToCount = ["yeah", "yes", "mhm"];
 
 
+app.post('/getTranscript', async (req, res, next) => {
+    console.log(req);
+    try {
+        const input = req.body.searchQuery;
+        if (!input) {
+            return res.status(400).send({ message: 'No video URL provided :(' });
+        }
+
+        const url = input.match(/(?:https?:\/\/)?(?:www\.)?youtube\.com\/watch\?.*v=([^&]*)/);
+
+        if(!url){
+            return res.status(400).send({ message: 'Invalid Youtube Link' });
+        }
+        videoId = url[1];
+const data = { message: "Success from backend", videoId: videoId};
+        res.status(200).json(data);
+      } catch (error) {
+        console.error("Error getting user input:", error);
+        res.status(500).json({ message: "Internal server error" });
+      }
+})
+
 app.get("/getTranscript", async (req, res, next) => {
-  
-    console.log("req from getTranscript", req.session);
+
+
     oAuth2Client.setCredentials({
         access_token: req.session.accessToken,
     });
@@ -191,6 +215,9 @@ app.get("/getTranscript", async (req, res, next) => {
     if (!req.session.accessToken) {
         return res.status(401).send({ message: 'Unauthorized: No access token available' });
     }
+
+    const videoId = req.session.videoId;
+     console.log("GET request to /getTranscript videoID:", videoId);
     
 
     try {
@@ -213,6 +240,9 @@ app.get("/getTranscript", async (req, res, next) => {
     }
 
 })
+
+
+
 
 
 
