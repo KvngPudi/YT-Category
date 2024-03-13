@@ -1,6 +1,6 @@
 # Yeah-Counter
 This project is a simple web application that counts the amount of "yes" in a youtube video.
-**Link to project:** [http://recruiters-love-seeing-live-demos.com/](https://github.com/KvngPudi/YT-Category)
+**Link to project:** [https://github.com/KvngPudi/YT-Category]
 
 ## How It's Made:
 
